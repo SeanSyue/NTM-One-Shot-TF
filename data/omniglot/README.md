@@ -1,3 +1,3 @@
 # Omniglot
 
-Download the [Omniglot dataset](https://github.com/brendenlake/omniglot) and unzip `python/images_background.zip` here.
+Download the [Omniglot dataset](https://github.com/brendenlake/omniglot/blob/master/python/images_background.zip) and unzip `python/images_background.zip` here.
