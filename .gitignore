@@ -2,7 +2,5 @@
 *.whl
 =1.11.0
 *.png
-.spyproject/
 .idea/workspace.xml
-data/
 ckpt/
