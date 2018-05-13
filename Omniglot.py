@@ -13,12 +13,13 @@ from MANN.Utils.Metrics import accuracy_instance
 
 
 def omniglot():
-    sess = tf.InteractiveSession()
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.98)
+    sess = tf.InteractiveSession(config=tf.ConfigProto(gpu_options=gpu_options))
 
     input_ph = tf.placeholder(dtype=tf.float32, shape=(16, 50, 400))  # (batch_size, time, input_dim)
     target_ph = tf.placeholder(dtype=tf.int32, shape=(16, 50))  # (batch_size, time)(label_indices)
 
-    ##Global variables for Omniglot Problem
+    # Global variables for Omniglot Problem
     nb_reads = 4
     controller_size = 200
     memory_shape = (128, 40)
@@ -59,11 +60,16 @@ def omniglot():
     # output_var = tf.cast(output_var, tf.int32)
     target_ph_oh = tf.one_hot(target_ph, depth=generator.nb_samples)
     print('Output, Target shapes: ', output_var.get_shape().as_list(), target_ph_oh.get_shape().as_list())
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=output_var, labels=target_ph_oh), name="cost")
+
+    # Changed to tf.nn.softmax_cross_entropy_with_logits_v2 due to deprecation warning in tf1.5+
+    # For < tf1.5, use tf.nn.softmax_cross_entropy_with_logits instead.
+    cost = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits_v2(logits=output_var, labels=target_ph_oh), name="cost")
+
     opt = tf.train.AdamOptimizer(learning_rate=1e-3)
     train_step = opt.minimize(cost, var_list=params)
-
     # train_step = tf.train.AdamOptimizer(1e-3).minimize(cost)
+
     accuracies = accuracy_instance(tf.argmax(output_var, axis=2), target_ph, batch_size=generator.batch_size)
     sum_out = tf.reduce_sum(
         tf.reshape(tf.one_hot(tf.argmax(output_var, axis=2), depth=generator.nb_samples), (-1, generator.nb_samples)),
@@ -107,6 +113,10 @@ def omniglot():
                 print((accs / 100.0))
                 print(('Episode %05d: %.6f' % (i, np.mean(score))))
                 scores, accs = [], np.zeros(generator.nb_samples_per_class)
+
+            if i % 500 == 0:
+                saver = tf.train.Saver()
+                saver.save(sess, 'ckpt/mann-model', global_step=i)
 
     except KeyboardInterrupt:
         print(time.time() - t0)

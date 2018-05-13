@@ -53,7 +53,7 @@ class OmniglotGenerator(object):
             angles = np.random.uniform(-self.max_rotation, self.max_rotation, size=sequence_length)
             shifts = np.random.uniform(-self.max_shift, self.max_shift, size=sequence_length)
 
-            example_inputs[i] = np.asarray([load_transform(filename, angle=angle, s=shift, size=self.img_size).flatten() \
+            example_inputs[i] = np.asarray([load_transform(filename, angle=angle, s=shift, size=self.img_size).flatten()
                                             for (filename, angle, shift) in zip(image_files, angles, shifts)],
                                            dtype=np.float32)
             example_outputs[i] = np.asarray(labels, dtype=np.int32)
